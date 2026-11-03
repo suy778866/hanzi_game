@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    timeout-minutes: 120
 
     steps:
     - name: Checkout code
@@ -22,6 +23,15 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev aidl
+
+    - name: Configure Memory and Swapfile
+      run: |
+        sudo fallocate -l 4G /swapfile
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        echo "_JAVA_OPTIONS=-Xmx2G" >> $GITHUB_ENV
+        echo "GRADLE_OPTS=-Xmx2048m -Dorg.gradle.daemon=false" >> $GITHUB_ENV
 
     - name: Install Buildozer and Cython
       run: |
