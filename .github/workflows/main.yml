@@ -19,16 +19,21 @@ jobs:
       with:
         python-version: '3.10'
 
+    # 核心修复：使用官方 Action 强制设置 JDK 17 环境
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev aidl
+        sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev aidl
 
-    # 核心修复：使用官方 Action 自动配置 Android SDK 环境并接受协议
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # 限制 Java 内存，防止编译到一半内存爆炸
     - name: Set Memory Limits
       run: |
         echo "_JAVA_OPTIONS=-Xmx2G" >> $GITHUB_ENV
