@@ -13,8 +13,11 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.behaviors import DragBehavior
 
-Window.size = (960, 540)
-FONT_PATH = "C:/Windows/Fonts/msyh.ttc"
+# 【已修复】注释掉强制窗口大小，让手机自适应全屏
+# Window.size = (960, 540)
+
+# 【已修复】将 Windows 绝对路径改为相对路径（请确保 assets 文件夹里有 msyh.ttc）
+FONT_PATH = "assets/msyh.ttf"
 
 # ----------------- 用于全屏遮挡但允许触摸穿透的布局 -----------------
 class FeedSceneLayout(FloatLayout):
@@ -77,7 +80,8 @@ class FadeOverlay(FloatLayout):
 class StartScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        bg = Image(source="assets/bg.png", allow_stretch=True, keep_ratio=False)
+        # 【已优化】使用 fit_mode="fill" 替代废弃属性
+        bg = Image(source="assets/bg.png", fit_mode="fill")
         self.add_widget(bg)
         title = Image(source="assets/title.png", size_hint=(None, None), size=(dp(320), dp(220)), pos_hint={"x": 0.02, "top": 0.98} )
         self.add_widget(title)
@@ -107,7 +111,7 @@ class StartScreen(Screen):
 class IntroScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        bg = Image(source="assets/bg_room.png", allow_stretch=True, keep_ratio=False)
+        bg = Image(source="assets/bg_room.png", fit_mode="fill")
         self.add_widget(bg)
         self.actor = Image(source="assets/701_close.png", size_hint=(None, None), size=(dp(400), dp(400)), pos_hint={"center_x": 0.5, "center_y": 0.6})
         self.add_widget(self.actor)
@@ -161,7 +165,7 @@ class IntroScreen(Screen):
 class GameScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.bg = Image(source="assets/bg_room.png", allow_stretch=True, keep_ratio=False)
+        self.bg = Image(source="assets/bg_room.png", fit_mode="fill")
         self.add_widget(self.bg)
 
         # --- 核心数值 ---
@@ -305,7 +309,7 @@ class GameScreen(Screen):
 
         # 使用 FeedSceneLayout 替代 FloatLayout，防止挡住触摸
         self.feed_scene = FeedSceneLayout()
-        self.feed_scene_bg = Image(source="assets/bg_desire.png", allow_stretch=True, keep_ratio=False)
+        self.feed_scene_bg = Image(source="assets/bg_desire.png", fit_mode="fill")
         self.feed_scene_actor = Image(source="assets/desire_character.png", size_hint=(None, None), size=(dp(400), dp(400)), pos_hint={"center_x": 0.5, "center_y": 0.5})
         self.btn_back = Button(background_normal="assets/btn_back.png", background_down="assets/btn_back.png", size_hint=(None, None), size=(dp(100), dp(100)), pos_hint={"x": 0.05, "center_y": 0.5})
         self.btn_back.bind(on_release=self.leave_portal)
