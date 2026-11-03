@@ -8,7 +8,6 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    # 核心修复：直接使用 Kivy 官方提供的现成 Docker 镜像，跳过自己构建环境
     container:
       image: kivy/buildozer:latest
       options: --user root
@@ -17,9 +16,10 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Build with Buildozer
-        run: buildozer android debug
+        # 核心修复：通过管道自动输入 y，并加上环境变量直接跳过 root 检查
+        run: echo "y" | buildozer android debug
         env:
-          # 在容器内部限制 Gradle 内存，防止被 OOM 杀掉
+          BUILDOZER_ALLOW_ROOT: 1
           GRADLE_OPTS: "-Xmx2G -Dorg.gradle.daemon=false"
 
       - name: Upload APK
