@@ -1,4 +1,4 @@
-name: Build Kivy APK Native
+name: Build Kivy APK Final
 
 on:
   push:
@@ -22,11 +22,26 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev aidl
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev wget
 
+    # 核心修复：手动下载并配置最新版的 Android SDK 命令行工具
+    - name: Setup Android SDK Tools
+      run: |
+        export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        
+        cd /tmp
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+        unzip -q cmdtools.zip -d $ANDROID_SDK_ROOT/cmdline-tools/
+        
+        mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+        
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+        yes | sdkmanager --licenses || true
+
+    # 核心修复：限制 Java 内存，防止编译到一半内存爆炸
     - name: Set Memory Limits
       run: |
-        # 只限制 Java 内存，不创建 Swap 了
         echo "_JAVA_OPTIONS=-Xmx2G" >> $GITHUB_ENV
         echo "GRADLE_OPTS=-Xmx2048m -Dorg.gradle.daemon=false" >> $GITHUB_ENV
 
@@ -35,15 +50,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install buildozer cython virtualenv
 
-    - name: Accept Android Licenses
+    - name: Build with Buildozer
       run: |
         export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
-        mkdir -p $ANDROID_SDK_ROOT/licenses
-        echo -e "\n8933bad161af4b6a5b573652ffc7aaf3aee85a47" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
-        echo -e "\nd56f5187479451eabf01fb78af6dfcb131b33910" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
-
-    - name: Build with Buildozer
-      run: buildozer android debug
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+        buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
