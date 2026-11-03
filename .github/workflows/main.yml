@@ -24,12 +24,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev aidl
 
-    - name: Configure Memory and Swapfile
+    - name: Set Memory Limits
       run: |
-        sudo fallocate -l 4G /swapfile
-        sudo chmod 600 /swapfile
-        sudo mkswap /swapfile
-        sudo swapon /swapfile
+        # 只限制 Java 内存，不创建 Swap 了
         echo "_JAVA_OPTIONS=-Xmx2G" >> $GITHUB_ENV
         echo "GRADLE_OPTS=-Xmx2048m -Dorg.gradle.daemon=false" >> $GITHUB_ENV
 
