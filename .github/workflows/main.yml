@@ -7,21 +7,23 @@ on:
 
 jobs:
   build-android:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    # 核心修复：直接使用 Kivy 官方提供的现成 Docker 镜像，跳过自己构建环境
+    container:
+      image: kivy/buildozer:latest
+      options: --user root
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      # 使用最权威的 Buildozer 打包 Action，内部包含了完美的 Docker 环境
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: stable
-          
+        run: buildozer android debug
+        env:
+          # 在容器内部限制 Gradle 内存，防止被 OOM 杀掉
+          GRADLE_OPTS: "-Xmx2G -Dorg.gradle.daemon=false"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: hanzi-game-apk
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
